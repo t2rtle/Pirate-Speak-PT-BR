@@ -1,0 +1,11 @@
+{
+  "pack": {
+    "pack_format": 86.0,
+      "min_format": 1,
+      "max_format": 1000,
+      "supported_formats": [1, 1000],
+    "description": "§a§oPirate Speak PT-BR 1.0 §6§o[§lDefault§r§6§o] §c§7§oby T2rtle Studio"
+  }
+}
+
+
