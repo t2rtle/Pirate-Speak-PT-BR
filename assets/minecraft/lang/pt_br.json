@@ -4196,7 +4196,7 @@
   "gui.abuseReport.reason.sexually_inappropriate": "Conteúdo sexual impróprio",
   "gui.abuseReport.reason.sexually_inappropriate.description": "Skins aquele are graphic in nature relating to sexual acts, sexual organs, and sexual violence.",
   "gui.abuseReport.reason.terrorism_or_violent_extremism": "Terrorismo ou extremismo violento",
-  "gui.abuseReport.reason.terrorism_or_violent_extremism.description": "Someone is talking about, promoting, or threatening to commit acts of terrorism or violent extremism for political, religious, ideological, or other reasons.",
+  "gui.abuseReport.reason.terrorism_or_violent_extremism.description": "Alguém está falando sobre, promovendo ou ameaçando cometer atos de terrorismo ou extremismo violento por motivos políticos, religiosos, ideológicos ou outros.",
   "gui.abuseReport.reason.title": "Selecionar Relatório Category",
   "gui.abuseReport.report_sent_msg": "We've successfully received seu relatório. Thank you!\n\nOur equipe will review it as soon as possible.",
   "gui.abuseReport.select_reason": "Selecionar Relatório Category",
