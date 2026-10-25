@@ -1,0 +1,152 @@
+name: Generate Pirate Speak PT-BR
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild pt_br.json with Brazilian Pirate Speak logic
+        env:
+          OLD: assets/minecraft/lang/old_pt_br.json
+          EN: assets/minecraft/lang/en_us.json
+          OUT: assets/minecraft/lang/pt_br.json
+        run: |
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+          old = json.loads(Path(__import__('os').environ['OLD']).read_text(encoding='utf-8'))
+          en = json.loads(Path(__import__('os').environ['EN']).read_text(encoding='utf-8'))
+
+          # Portuguese nautical/pirate vocabulary inspired by Minecraft's Seven Seas joke language.
+          words = [
+              (r'\bEspada de Ferro\b', 'Alfanje de Ferro'),
+              (r'\bEspada de Diamante\b', 'Alfanje de Diamante'),
+              (r'\bEspada de Ouro\b', 'Alfanje de Ouro'),
+              (r'\bEspada de Pedra\b', 'Alfanje de Pedra'),
+              (r'\bEspada de Madeira\b', 'Alfanje de Madeira'),
+              (r'\bEspadas\b', 'Alfanges'),
+              (r'\bEspada\b', 'Alfanje'),
+              (r'\bNavio\b', 'Embarcação'),
+              (r'\bnavio\b', 'embarcação'),
+              (r'\bBarco\b', 'Bote'),
+              (r'\bbarco\b', 'bote'),
+              (r'\bBarcos\b', 'Botes'),
+              (r'\bbarcos\b', 'botes'),
+              (r'\bMar\b', 'Alto-mar'),
+              (r'\bmar\b', 'alto-mar'),
+              (r'\bOceano\b', 'Grande Mar'),
+              (r'\boceano\b', 'Grande Mar'),
+              (r'\bTesouro\b', 'Tesouro'),
+              (r'\bAldeão\b', 'Marujo da aldeia'),
+              (r'\baldeão\b', 'marujo da aldeia'),
+              (r'\bAldeões\b', 'Marujos da aldeia'),
+              (r'\baldeões\b', 'marujos da aldeia'),
+              (r'\bComerciante\b', 'Mercador'),
+              (r'\bcomerciante\b', 'mercador'),
+              (r'\bTripulação\b', 'Tripulação'),
+              (r'\btripulação\b', 'tripulação'),
+              (r'\bInimigo\b', 'Patife'),
+              (r'\binimigo\b', 'patife'),
+              (r'\bInimigos\b', 'Patifes'),
+              (r'\binimigos\b', 'patifes'),
+              (r'\bChefe\b', 'Capitão'),
+              (r'\bchefe\b', 'capitão'),
+              (r'\bComida\b', 'Provisões'),
+              (r'\bcomida\b', 'provisões'),
+              (r'\bQuarto\b', 'Cabine'),
+              (r'\bquarto\b', 'cabine'),
+              (r'\bCasa\b', 'Cabana'),
+              (r'\bcasa\b', 'cabana'),
+              (r'\bCaminho\b', 'Rota'),
+              (r'\bcaminho\b', 'rota'),
+              (r'\bMapa\b', 'Carta náutica'),
+              (r'\bmapa\b', 'carta náutica'),
+              (r'\bPorta\b', 'Alçapão'),
+              (r'\bIlha\b', 'Ilha'),
+              (r'\bilha\b', 'ilha'),
+              (r'\bPraia\b', 'Costa'),
+              (r'\bpraia\b', 'costa'),
+              (r'\bCaverna\b', 'Gruta'),
+              (r'\bcaverna\b', 'gruta'),
+              (r'\bCapitão\b', 'Capitão'),
+              (r'\bcapitão\b', 'capitão'),
+          ]
+
+          def pirate(s, key):
+              if not isinstance(s, str):
+                  return s
+              # Apply vocabulary first, then natural Brazilian pirate contractions.
+              for pat, repl in words:
+                  s = re.sub(pat, repl, s)
+              s = re.sub(r'\bvocê\b', 'tu', s, flags=re.I)
+              s = re.sub(r'\bvocês\b', 'vós', s, flags=re.I)
+              s = re.sub(r'\bseu\b', 'teu', s, flags=re.I)
+              s = re.sub(r'\bsua\b', 'tua', s, flags=re.I)
+              s = re.sub(r'\bseus\b', 'teus', s, flags=re.I)
+              s = re.sub(r'\bsuas\b', 'tuas', s, flags=re.I)
+              s = re.sub(r'\bpara\b', 'pra', s, flags=re.I)
+              s = re.sub(r'\bEstá\b', 'Tá', s)
+              s = re.sub(r'\bestá\b', 'tá', s)
+              s = re.sub(r'\bEstão\b', 'Tão', s)
+              s = re.sub(r'\bestão\b', 'tão', s)
+              s = re.sub(r'\bVocê\b', 'Tu', s)
+              s = re.sub(r'\bVocês\b', 'Vós', s)
+              # Pirate-style address only where it reads naturally, avoiding spam.
+              if key.startswith(('menu.', 'multiplayer.', 'commands.', 'chat.')) and s and not re.search(r'\b(marujo|capitão|tripulação|pirata)\b', s, re.I):
+                  if s.endswith(('.', '!', '?')):
+                      s = s[:-1] + ', marujo' + s[-1]
+              special = {
+                  'language.name': 'Fala Pirata',
+                  'language.region': 'Os Sete Mares',
+                  'language.code': 'pt_br',
+                  'menu.disconnect': 'Abandonar o navio',
+                  'menu.returnToGame': 'Voltar ao convés',
+                  'menu.singleplayer': 'Jornada solo',
+                  'menu.multiplayer': 'Jogar com a tripulação',
+                  'menu.options': 'Ajustes do navio',
+                  'menu.quit': 'Deixar o navio',
+                  'menu.play': 'Ao mar!',
+                  'menu.loadingLevel': 'Preparando o navio...',
+                  'menu.generatingLevel': 'Desenhando a carta náutica',
+                  'menu.generatingTerrain': 'Preparando as terras da tripulação',
+                  'key.sprint': 'Avançar a toda vela',
+                  'key.use': 'Usar / construir',
+                  'key.attack': 'Atacar',
+                  'key.swapOffhand': 'Trocar o item de mão',
+                  'lectern.take_book': 'Pegar teu diário de bordo',
+              }
+              return special.get(key, s)
+
+          out = {}
+          for k, english in en.items():
+              base = old.get(k, english)
+              out[k] = pirate(base, k)
+
+          Path(__import__('os').environ['OUT']).write_text(json.dumps(out, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Validate keys and placeholders
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          en=json.loads(Path('assets/minecraft/lang/en_us.json').read_text(encoding='utf-8'))
+          pt=json.loads(Path('assets/minecraft/lang/pt_br.json').read_text(encoding='utf-8'))
+          assert list(en)==list(pt), 'Key order/parity mismatch'
+          token=re.compile(r'%(?:\d+\$)?s|%%|\\n')
+          for k in en:
+              if token.findall(en[k]) != token.findall(pt[k]):
+                  raise SystemExit(f'Placeholder mismatch: {k}')
+          print(f'Validated {len(en)} keys with matching placeholders.')
+          PY
+      - name: Commit generated translation and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/workflows/generate-pirate-ptbr.yml
+          git add assets/minecraft/lang/pt_br.json .github/workflows/generate-pirate-ptbr.yml
+          git commit -m 'Rebuild PT-BR Pirate Speak translation' || exit 0
+          git push
