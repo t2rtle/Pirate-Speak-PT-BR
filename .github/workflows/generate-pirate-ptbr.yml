@@ -1,0 +1,59 @@
+name: Generate Pirate Speak PT-BR
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild pt_br.json
+        run: |
+          python - <<'PY'
+          import json,re,os
+          from pathlib import Path
+          old=json.loads(Path('assets/minecraft/lang/old_pt_br.json').read_text(encoding='utf-8'))
+          en=json.loads(Path('assets/minecraft/lang/en_us.json').read_text(encoding='utf-8'))
+          rules=[
+            (r'\bEspada de Ferro\b','Alfanje de Ferro'),(r'\bEspada de Diamante\b','Alfanje de Diamante'),
+            (r'\bEspada de Ouro\b','Alfanje de Ouro'),(r'\bEspada de Pedra\b','Alfanje de Pedra'),
+            (r'\bEspada de Madeira\b','Alfanje de Madeira'),(r'\bEspadas\b','Alfanges'),(r'\bEspada\b','Alfanje'),
+            (r'\bNavio\b','Embarcação'),(r'\bnavio\b','embarcação'),(r'\bBarco\b','Bote'),(r'\bbarco\b','bote'),
+            (r'\bBarcos\b','Botes'),(r'\bbarcos\b','botes'),(r'\bOceano\b','Grande Mar'),(r'\boceano\b','Grande Mar'),
+            (r'\bAldeões\b','Marujos da aldeia'),(r'\baldeões\b','marujos da aldeia'),(r'\bAldeão\b','Marujo da aldeia'),
+            (r'\baldeão\b','marujo da aldeia'),(r'\bComerciante\b','Mercador'),(r'\bcomerciante\b','mercador'),
+            (r'\bInimigos\b','Patifes'),(r'\binimigos\b','patifes'),(r'\bInimigo\b','Patife'),(r'\binimigo\b','patife'),
+            (r'\bChefe\b','Capitão'),(r'\bchefe\b','capitão'),(r'\bComida\b','Provisões'),(r'\bcomida\b','provisões'),
+            (r'\bQuarto\b','Cabine'),(r'\bquarto\b','cabine'),(r'\bCasa\b','Cabana'),(r'\bcasa\b','cabana'),
+            (r'\bMapa\b','Carta náutica'),(r'\bmapa\b','carta náutica'),(r'\bPraia\b','Costa'),(r'\bpraia\b','costa'),
+            (r'\bCaverna\b','Gruta'),(r'\bcaverna\b','gruta'),
+          ]
+          special={
+            'language.name':'Fala Pirata','language.region':'Os Sete Mares','language.code':'pt_br',
+            'menu.disconnect':'Abandonar o navio','menu.returnToGame':'Voltar ao convés','menu.singleplayer':'Jornada solo',
+            'menu.multiplayer':'Jogar com a tripulação','menu.options':'Ajustes do navio','menu.quit':'Deixar o navio',
+            'menu.play':'Ao mar!','menu.loadingLevel':'Preparando o navio...','menu.generatingLevel':'Desenhando a carta náutica',
+            'menu.generatingTerrain':'Preparando as terras da tripulação','key.sprint':'Avançar a toda vela',
+            'key.use':'Usar / construir','key.attack':'Atacar','key.swapOffhand':'Trocar o item de mão',
+            'lectern.take_book':'Pegar teu diário de bordo'
+          }
+          def p(s,k):
+            if not isinstance(s,str): return s
+            for a,b in rules: s=re.sub(a,b,s)
+            for a,b in [(r'\bVocês\b','Vós'),(r'\bvocês\b','vós'),(r'\bVocê\b','Tu'),(r'\bvocê\b','tu'),(r'\bseus\b','teus'),(r'\bsuas\b','tuas'),(r'\bseu\b','teu'),(r'\bsua\b','tua'),(r'\bpara\b','pra'),(r'\bEstá\b','Tá'),(r'\bestá\b','tá'),(r'\bEstão\b','Tão'),(r'\bestão\b','tão')]: s=re.sub(a,b,s)
+            return special.get(k,s)
+          out={k:p(old.get(k,en[k]),k) for k in en}
+          Path('assets/minecraft/lang/pt_br.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          # Validate exact key parity and placeholder preservation.
+          assert list(en)==list(out)
+          token=re.compile(r'%(?:\d+\$)?s|%%|\\n')
+          for k in en: assert token.findall(en[k])==token.findall(out[k]),k
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/generate-pirate-ptbr.yml
+          git add assets/minecraft/lang/pt_br.json
+          git commit -m 'Rebuild PT-BR Pirate Speak translation'
+          git push
